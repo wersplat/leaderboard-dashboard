@@ -9,7 +9,6 @@ from flask import Flask, g, render_template, request
 from dotenv import load_dotenv
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-# Removed duplicate import statement
 
 load_dotenv()
 
@@ -94,12 +93,16 @@ def upload_file():
         else:
             return "Unsupported file format", 400
 
+        # Validate required columns
+        required_columns = {'team_name', 'wins', 'losses'}
+        if not required_columns.issubset(data.columns):
+            return f"Missing required columns: {required_columns - set(data.columns)}", 400
+
         db = get_db()
         for _, row in data.iterrows():
             db.execute(
-                'INSERT INTO leaderboard (team, wins, losses) '
-                'VALUES (?, ?, ?)',
-                (row['team'], row['wins'], row['losses'])
+                'INSERT INTO teams (team_name, wins, losses) VALUES (?, ?, ?)',
+                (row['team_name'], row['wins'], row['losses'])
             )
         db.commit()
         return "File uploaded and data inserted successfully", 200
