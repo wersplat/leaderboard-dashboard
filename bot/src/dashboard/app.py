@@ -10,7 +10,7 @@ load_dotenv()
 
 print(sys.executable)
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 DATABASE = os.getenv('DATABASE', '/tmp/leaderboard.db')
 
 
