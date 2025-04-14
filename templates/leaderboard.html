@@ -17,6 +17,12 @@
         </tbody>
     </table>
 
+    <form action="/upload" method="post" enctype="multipart/form-data" style="margin-top: 20px;">
+        <label for="file">Upload CSV/Excel:</label>
+        <input type="file" name="file" id="file" accept=".csv, .xlsx">
+        <button type="submit">Upload</button>
+    </form>
+
     <form action="/stop-service" method="post" style="margin-top: 20px;">
         <input type="hidden" name="key" value="your_secret_key">
         <button type="submit" style="background-color: red; color: white; padding: 10px; border: none; cursor: pointer;">Stop Service</button>

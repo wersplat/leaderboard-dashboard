@@ -1,6 +1,9 @@
 import os
 import sys
 import requests
+import pandas as pd
+from werkzeug.utils import secure_filename
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import sqlite3
 from flask import Flask, render_template, g, request
@@ -85,6 +88,36 @@ def stop_service():
     else:
         return f"Failed to stop service: {response.status_code} - {response.text}", 500
 
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return "No file part", 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return "No selected file", 400
+
+    filename = secure_filename(file.filename)
+    file_path = os.path.join('/tmp', filename)
+    file.save(file_path)
+
+    try:
+        if filename.endswith('.csv'):
+            data = pd.read_csv(file_path)
+        elif filename.endswith('.xlsx'):
+            data = pd.read_excel(file_path)
+        else:
+            return "Unsupported file format", 400
+
+        db = get_db()
+        for _, row in data.iterrows():
+            db.execute('INSERT INTO leaderboard (team, wins, losses) VALUES (?, ?, ?)', (row['team'], row['wins'], row['losses']))
+        db.commit()
+        return "File uploaded and data inserted successfully", 200
+    except Exception as e:
+        return f"An error occurred: {e}", 500
+    finally:
+        os.remove(file_path)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
