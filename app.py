@@ -4,7 +4,7 @@ import requests
 import pandas as pd
 from werkzeug.utils import secure_filename
 import sqlite3
-from flask import Flask, g, render_template, request
+from flask import Flask, g, render_template, request, redirect, url_for, flash
 
 from dotenv import load_dotenv
 
@@ -70,18 +70,21 @@ SERVICE_ID = os.getenv('SERVICE_ID')
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
-        return "No file part", 400
+        flash("No file part", "error")
+        return redirect("https://dashboard.bodegacatsgc.gg")
 
     file = request.files['file']
     if file.filename == '':
-        return "No selected file", 400
+        flash("No selected file", "error")
+        return redirect("https://dashboard.bodegacatsgc.gg")
 
     # Validate file size (limit to 5MB)
     file.seek(0, os.SEEK_END)
     file_size = file.tell()
     file.seek(0)
     if file_size > 5 * 1024 * 1024:
-        return "File size exceeds 5MB limit", 400
+        flash("File size exceeds 5MB limit", "error")
+        return redirect("https://dashboard.bodegacatsgc.gg")
 
     filename = secure_filename(file.filename)
     file_path = os.path.join('/tmp', filename)
@@ -93,12 +96,14 @@ def upload_file():
         elif filename.endswith('.xlsx'):
             data = pd.read_excel(file_path)
         else:
-            return "Unsupported file format", 400
+            flash("Unsupported file format", "error")
+            return redirect("https://dashboard.bodegacatsgc.gg")
 
         # Validate required columns
         required_columns = {'team_name', 'wins', 'losses'}
         if not required_columns.issubset(data.columns):
-            return f"Missing required columns: {required_columns - set(data.columns)}", 400
+            flash(f"Missing required columns: {required_columns - set(data.columns)}", "error")
+            return redirect("https://dashboard.bodegacatsgc.gg")
 
         db = get_db()
         cur = db.cursor()
@@ -112,12 +117,14 @@ def upload_file():
         db.commit()
 
     except Exception as e:
-        return f"An error occurred: {str(e)}", 500
+        flash(f"An error occurred: {str(e)}", "error")
+        return redirect("https://dashboard.bodegacatsgc.gg")
 
     finally:
         os.remove(file_path)
 
-    return "File uploaded and processed successfully", 200
+    flash("File uploaded and processed successfully", "success")
+    return redirect("https://dashboard.bodegacatsgc.gg")
 
 
 @app.route('/download_standings')
