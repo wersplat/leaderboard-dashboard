@@ -29,7 +29,11 @@ def get_db():
             count = cur.fetchone()[0]
             if count == 0:
                 # Insert sample data only if the table is empty
-                cur.execute("DELETE FROM teams")
+                cur.execute("INSERT INTO teams (team_name, wins, losses, total_points) VALUES \
+                            ('Team A', 5, 2, 52),\
+                            ('Team B', 4, 3, 47),\
+                            ('Team C', 3, 4, 37)")
+                db.commit()
     return db
 
 
@@ -44,13 +48,14 @@ def close_connection(exception):
 @app.route("/")
 def leaderboard():
     cur = get_db().cursor()
-    # Breaking the long SQL query into multiple lines for better readability
     cur.execute(
         "SELECT team_name, wins, losses, games_played, win_rate, division "
         "FROM teams ORDER BY wins DESC"
     )
     rows = cur.fetchall()
-    return render_template("leaderboard.html", rows=rows)
+    if not rows:
+        return "No teams available in the leaderboard."
+    return render_template("leaderboard.html", teams=rows)
 
 
 @app.route("/upload", methods=["POST"])
@@ -234,6 +239,35 @@ def add_column():
     except Exception as e:
         app.logger.error(f"Error adding column: {e}")
         return "An error occurred while adding the column.", 500
+
+
+@app.route("/add_team", methods=["POST"])
+def add_team():
+    team_name = request.form.get("team_name")
+    wins = request.form.get("wins", 0, type=int)
+    losses = request.form.get("losses", 0, type=int)
+    total_points = request.form.get("total_points", 0, type=int)
+
+    db = get_db()
+    cur = db.cursor()
+
+    try:
+        # Check if the team already exists
+        cur.execute("SELECT COUNT(*) FROM teams WHERE team_name = ?", (team_name,))
+        if cur.fetchone()[0] > 0:
+            return f"Team '{team_name}' already exists in the leaderboard.", 400
+
+        # Insert the new team
+        cur.execute(
+            "INSERT INTO teams (team_name, wins, losses, total_points) VALUES (?, ?, ?, ?)",
+            (team_name, wins, losses, total_points),
+        )
+        db.commit()
+        return redirect("/")
+    except sqlite3.IntegrityError as e:
+        return f"An error occurred: {e}", 500
+    finally:
+        cur.close()
 
 
 if __name__ == "__main__":

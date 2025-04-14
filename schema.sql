@@ -21,7 +21,7 @@ CREATE INDEX IF NOT EXISTS idx_team_name ON teams (team_name);
 
 CREATE INDEX IF NOT EXISTS idx_wins ON teams (wins);
 
--- Add a unique constraint on team_name to prevent duplicates
+-- Ensure the UNIQUE constraint is properly defined on the team_name column
 CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_team_name ON teams (team_name);
 
 -- Add a composite index on wins and losses for optimized queries
