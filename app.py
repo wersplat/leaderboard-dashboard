@@ -1,11 +1,9 @@
 import os
 import sys
-import requests
-import pandas as pd
-from werkzeug.utils import secure_filename
 import sqlite3
-from flask import Flask, g, render_template, request, redirect, url_for, flash
-
+from flask import Flask, g, render_template, request, redirect, flash
+from werkzeug.utils import secure_filename
+import pandas as pd
 from dotenv import load_dotenv
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -30,7 +28,7 @@ def get_db():
             cur.execute("SELECT COUNT(*) FROM teams")
             count = cur.fetchone()[0]
             if count == 0:
-                # Insert sample data
+                # Insert sample data only if the table is empty
                 cur.execute(
                     "INSERT INTO teams (team_name, wins, losses) VALUES "
                     "('Team A', 10, 5)"
@@ -39,10 +37,7 @@ def get_db():
                     "INSERT INTO teams (team_name, wins, losses) VALUES "
                     "('Team B', 7, 8)"
                 )
-            else:
-                # Remove sample data if real data exists
-                cur.execute("DELETE FROM teams WHERE team_name IN ('Team A', 'Team B')")
-            db.commit()
+                db.commit()
     return db
 
 
@@ -59,18 +54,6 @@ def leaderboard():
     cur.execute("SELECT team_name, wins, losses FROM teams ORDER BY wins DESC")
     rows = cur.fetchall()
     return render_template('leaderboard.html', rows=rows)
-
-
-# Load environment variables
-SECRET_KEY = os.getenv('SECRET_KEY')
-RENDER_API_KEY = os.getenv('RENDER_API_KEY')
-SERVICE_ID = os.getenv('SERVICE_ID')
-
-# Ensure SECRET_KEY is set
-if not SECRET_KEY:
-    SECRET_KEY = 'default_secret_key'
-
-app.secret_key = SECRET_KEY
 
 
 @app.route('/upload', methods=['POST'])
@@ -108,7 +91,8 @@ def upload_file():
         # Validate required columns
         required_columns = {'team_name', 'wins', 'losses'}
         if not required_columns.issubset(data.columns):
-            flash(f"Missing required columns: {required_columns - set(data.columns)}", "error")
+            missing_columns = required_columns - set(data.columns)
+            flash(f"Missing required columns: {missing_columns}", "error")
             return redirect("https://dashboard.bodegacatsgc.gg")
 
         db = get_db()
@@ -117,7 +101,7 @@ def upload_file():
         # Insert data into the database
         for _, row in data.iterrows():
             cur.execute(
-                "INSERT INTO teams (team_name, wins, losses) VALUES (?, ?, ?) ",
+                "INSERT INTO teams (team_name, wins, losses) VALUES (?, ?, ?)",
                 (row['team_name'], int(row['wins']), int(row['losses']))
             )
         db.commit()
@@ -132,14 +116,6 @@ def upload_file():
     flash("File uploaded and processed successfully", "success")
     return redirect("https://dashboard.bodegacatsgc.gg")
 
-
-def get_db_connection():
-    try:
-        conn = get_db()
-        return conn
-    except Exception as e:
-        app.logger.error(f"Database connection failed: {e}")
-        raise
 
 @app.route('/download_standings')
 def download_standings():
@@ -167,6 +143,7 @@ def download_standings():
     except Exception as e:
         app.logger.error(f"Error generating standings: {e}")
         return "An error occurred while generating standings.", 500
+
 
 @app.route('/clear_standings')
 def clear_standings():
