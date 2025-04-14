@@ -6,7 +6,7 @@ import sqlite3
 
 
 app = Flask(__name__)
-DATABASE = 'leaderboard.db'
+DATABASE = '/tmp/leaderboard.db'
 
 
 def get_db():

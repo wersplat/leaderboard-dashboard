@@ -2,7 +2,13 @@ services:
   - type: web
     name: leaderboard-dashboard
     env: python
-    buildCommand: ""
+    buildCommand: |
+      if ! command -v sqlite3 &> /dev/null; then
+        echo "Error: sqlite3 is not installed. Please contact Render support."
+        exit 1
+      fi
+      touch /tmp/leaderboard.db
+      sqlite3 /tmp/leaderboard.db .read schema.sql
     startCommand: "python app.py"
     envVars:
       - key: FLASK_ENV
