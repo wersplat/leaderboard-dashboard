@@ -66,6 +66,12 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 RENDER_API_KEY = os.getenv('RENDER_API_KEY')
 SERVICE_ID = os.getenv('SERVICE_ID')
 
+# Ensure SECRET_KEY is set
+if not SECRET_KEY:
+    SECRET_KEY = 'default_secret_key'
+
+app.secret_key = SECRET_KEY
+
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
