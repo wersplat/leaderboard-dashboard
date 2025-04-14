@@ -1,7 +1,7 @@
 import os
 import sys
 import sqlite3
-from flask import Flask, g, render_template, request, redirect, flash
+from flask import Flask, g, render_template, request, redirect
 from werkzeug.utils import secure_filename
 import pandas as pd
 from dotenv import load_dotenv
@@ -59,12 +59,10 @@ def leaderboard():
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
-        flash("No file part", "error")
         return redirect("https://dashboard.bodegacatsgc.gg")
 
     file = request.files['file']
     if file.filename == '':
-        flash("No selected file", "error")
         return redirect("https://dashboard.bodegacatsgc.gg")
 
     # Validate file size (limit to 5MB)
@@ -72,7 +70,6 @@ def upload_file():
     file_size = file.tell()
     file.seek(0)
     if file_size > 5 * 1024 * 1024:
-        flash("File size exceeds 5MB limit", "error")
         return redirect("https://dashboard.bodegacatsgc.gg")
 
     filename = secure_filename(file.filename)
@@ -85,14 +82,11 @@ def upload_file():
         elif filename.endswith('.xlsx'):
             data = pd.read_excel(file_path)
         else:
-            flash("Unsupported file format", "error")
             return redirect("https://dashboard.bodegacatsgc.gg")
 
         # Validate required columns
         required_columns = {'team_name', 'wins', 'losses'}
         if not required_columns.issubset(data.columns):
-            missing_columns = required_columns - set(data.columns)
-            flash(f"Missing required columns: {missing_columns}", "error")
             return redirect("https://dashboard.bodegacatsgc.gg")
 
         db = get_db()
@@ -107,13 +101,11 @@ def upload_file():
         db.commit()
 
     except Exception as e:
-        flash(f"An error occurred: {str(e)}", "error")
         return redirect("https://dashboard.bodegacatsgc.gg")
 
     finally:
         os.remove(file_path)
 
-    flash("File uploaded and processed successfully", "success")
     return redirect("https://dashboard.bodegacatsgc.gg")
 
 
