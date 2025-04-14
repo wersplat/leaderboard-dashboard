@@ -196,5 +196,24 @@ def update_points():
         return "An error occurred while updating points.", 500
 
 
+@app.route('/add_column')
+def add_column():
+    try:
+        db = get_db()
+        cur = db.cursor()
+
+        # Step 1: Add the column without a default value
+        cur.execute("ALTER TABLE teams ADD COLUMN new_column TEXT")
+
+        # Step 2: Update the column with the desired default value
+        cur.execute("UPDATE teams SET new_column = 'Default Value'")
+
+        db.commit()
+        return "Column added and updated successfully!", 200
+    except Exception as e:
+        app.logger.error(f"Error adding column: {e}")
+        return "An error occurred while adding the column.", 500
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
