@@ -1,11 +1,17 @@
+import os
 import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import sqlite3
 from flask import Flask, render_template, g
+from dotenv import load_dotenv
+
+load_dotenv()
 
 print(sys.executable)
 
 app = Flask(__name__)
-DATABASE = '/tmp/leaderboard.db'
+DATABASE = os.getenv('DATABASE', '/tmp/leaderboard.db')
+
 
 def get_db():
     db = getattr(g, '_database', None)
