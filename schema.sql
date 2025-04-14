@@ -14,3 +14,5 @@ INSERT INTO teams (team_name, wins, losses) VALUES
 
 -- Add an index to optimize queries on team_name
 CREATE INDEX IF NOT EXISTS idx_team_name ON teams (team_name);
+
+CREATE INDEX IF NOT EXISTS idx_wins ON teams (wins);
