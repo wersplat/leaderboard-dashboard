@@ -63,6 +63,9 @@ def leaderboard():
 
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
+    if not request.remote_addr == '127.0.0.1':
+        return "Shutdown can only be triggered locally.", 403
+
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
