@@ -81,6 +81,13 @@ def upload_file():
     if file.filename == '':
         return "No selected file", 400
 
+    # Validate file size (limit to 5MB)
+    file.seek(0, os.SEEK_END)
+    file_size = file.tell()
+    file.seek(0)
+    if file_size > 5 * 1024 * 1024:
+        return "File size exceeds 5MB limit", 400
+
     filename = secure_filename(file.filename)
     file_path = os.path.join('/tmp', filename)
     file.save(file_path)
@@ -99,17 +106,23 @@ def upload_file():
             return f"Missing required columns: {required_columns - set(data.columns)}", 400
 
         db = get_db()
+        cur = db.cursor()
+
+        # Insert data into the database
         for _, row in data.iterrows():
-            db.execute(
-                'INSERT INTO teams (team_name, wins, losses) VALUES (?, ?, ?)',
-                (row['team_name'], row['wins'], row['losses'])
+            cur.execute(
+                "INSERT INTO teams (team_name, wins, losses) VALUES (?, ?, ?) ",
+                (row['team_name'], int(row['wins']), int(row['losses']))
             )
         db.commit()
-        return "File uploaded and data inserted successfully", 200
+
     except Exception as e:
-        return f"An error occurred: {e}", 500
+        return f"An error occurred: {str(e)}", 500
+
     finally:
         os.remove(file_path)
+
+    return "File uploaded and processed successfully", 200
 
 
 if __name__ == '__main__':
