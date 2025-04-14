@@ -1,5 +1,6 @@
 import os
 import sys
+import requests
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import sqlite3
 from flask import Flask, render_template, g, request
@@ -61,16 +62,28 @@ def leaderboard():
     return render_template('leaderboard.html', rows=rows)
 
 
-@app.route('/shutdown', methods=['POST'])
-def shutdown():
-    if not request.remote_addr == '127.0.0.1':
-        return "Shutdown can only be triggered locally.", 403
+# Load environment variables
+SECRET_KEY = os.getenv('SECRET_KEY')
+RENDER_API_KEY = os.getenv('RENDER_API_KEY')
+SERVICE_ID = os.getenv('SERVICE_ID')
 
-    func = request.environ.get('werkzeug.server.shutdown')
-    if func is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    func()
-    return 'Server shutting down...'
+
+@app.route('/stop-service', methods=['POST'])
+def stop_service():
+    # Verify the secret key
+    if request.form.get('key') != SECRET_KEY:
+        return "Forbidden", 403
+
+    # Call Render API to stop the service
+    headers = {
+        "Authorization": f"Bearer {RENDER_API_KEY}"
+    }
+    response = requests.post(f"https://api.render.com/v1/services/{SERVICE_ID}/stop", headers=headers)
+
+    if response.status_code == 200:
+        return "Service stopped successfully."
+    else:
+        return f"Failed to stop service: {response.status_code} - {response.text}", 500
 
 
 if __name__ == '__main__':
