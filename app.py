@@ -127,37 +127,52 @@ def upload_file():
     return redirect("https://dashboard.bodegacatsgc.gg")
 
 
+def get_db_connection():
+    try:
+        conn = get_db()
+        return conn
+    except Exception as e:
+        app.logger.error(f"Database connection failed: {e}")
+        raise
+
 @app.route('/download_standings')
 def download_standings():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM teams")
-    rows = cur.fetchall()
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM teams")
+        rows = cur.fetchall()
 
-    # Create a CSV file in memory
-    import csv
-    from io import StringIO
-    output = StringIO()
-    writer = csv.writer(output)
-    writer.writerow(['Team Name', 'Wins', 'Losses'])  # Header row
-    writer.writerows(rows)
-    output.seek(0)
+        # Create a CSV file in memory
+        import csv
+        from io import StringIO
+        output = StringIO()
+        writer = csv.writer(output)
+        writer.writerow(['Team Name', 'Wins', 'Losses'])  # Header row
+        writer.writerows(rows)
+        output.seek(0)
 
-    # Send the CSV file as a response
-    return app.response_class(
-        output.getvalue(),
-        mimetype='text/csv',
-        headers={"Content-Disposition": "attachment;filename=standings.csv"}
-    )
-
+        # Send the CSV file as a response
+        return app.response_class(
+            output.getvalue(),
+            mimetype='text/csv',
+            headers={"Content-Disposition": "attachment;filename=standings.csv"}
+        )
+    except Exception as e:
+        app.logger.error(f"Error generating standings: {e}")
+        return "An error occurred while generating standings.", 500
 
 @app.route('/clear_standings')
 def clear_standings():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM teams")
-    conn.commit()
-    return "Standings cleared successfully!", 200
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM teams")
+        conn.commit()
+        return "Standings cleared successfully!", 200
+    except Exception as e:
+        app.logger.error(f"Error clearing standings: {e}")
+        return "An error occurred while clearing standings.", 500
 
 
 if __name__ == '__main__':
