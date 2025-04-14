@@ -10,7 +10,7 @@ load_dotenv()
 
 print(sys.executable)
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 DATABASE = os.getenv('DATABASE', '/tmp/leaderboard.db')
 
 
@@ -19,7 +19,7 @@ def get_db():
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
         with app.app_context():
-            schema_path = os.path.join(os.path.dirname(__file__), 'bot', 'src', 'dashboard', 'schema.sql')
+            schema_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'schema.sql')
             with open(schema_path, 'r') as f:
                 db.cursor().executescript(f.read())
             # Check if the teams table is empty
