@@ -1,8 +1,7 @@
-import discord
-from discord.ext import commands
-from utils.logging import setup_logging
+from ..utils.logging import setup_logging
 
 logger = setup_logging()
+
 
 class AdminControls(commands.Cog):
     def __init__(self, bot):

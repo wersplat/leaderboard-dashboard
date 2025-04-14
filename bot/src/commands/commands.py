@@ -5,7 +5,7 @@ from datetime import datetime
 from sheets.sheets_api import append_stats_to_sheet, get_game_data_by_id  # Assuming these functions exist
 from sheets.leaderboard import get_leaderboard
 from bot.cooldowns import is_on_cooldown, update_cooldown
-from utils.logging import setup_logging
+from ...utils.logging import setup_logging
 
 logger = setup_logging()
 
