@@ -7,7 +7,22 @@
 <body>
     <h1>Leaderboard</h1>
     <table id="standings">
-        <!-- Table content here -->
+        <thead>
+            <tr>
+                <th>Team Name</th>
+                <th>Wins</th>
+                <th>Losses</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ row[0] }}</td>
+                <td>{{ row[1] }}</td>
+                <td>{{ row[2] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 
     <!-- File upload form -->
