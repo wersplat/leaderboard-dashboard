@@ -1,1 +1,0 @@
-# Moved to ocr/app.py in the new structure.

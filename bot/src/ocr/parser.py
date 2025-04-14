@@ -1,1 +1,0 @@
-# Moved to ocr/parser.py in the new structure.
