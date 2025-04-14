@@ -19,7 +19,7 @@ CREATE INDEX IF NOT EXISTS idx_team_name ON teams (team_name);
 CREATE INDEX IF NOT EXISTS idx_wins ON teams (wins);
 
 -- Add a last_updated column to track record modifications
-ALTER TABLE teams ADD COLUMN last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE teams ADD COLUMN last_updated TEXT;
 
 -- Add a games_played column to store total games played
 ALTER TABLE teams ADD COLUMN games_played INTEGER GENERATED ALWAYS AS (wins + losses) STORED;

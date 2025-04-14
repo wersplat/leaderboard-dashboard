@@ -205,7 +205,7 @@ def add_column():
         # Step 1: Add the column without a default value
         cur.execute("ALTER TABLE teams ADD COLUMN new_column TEXT")
 
-        # Step 2: Update the column with the desired default value
+        # Step 2: Update the column without a timestamp
         cur.execute("UPDATE teams SET new_column = 'Default Value'")
 
         db.commit()
