@@ -151,10 +151,55 @@ def clear_standings():
         cur = db.cursor()
         cur.execute("DELETE FROM teams")
         db.commit()
-        return "Standings cleared successfully!", 200
+
+        # Insert sample data to reset the standings
+        sample_teams = [
+            ('Sample Team 1', 0, 0),
+            ('Sample Team 2', 0, 0)
+        ]
+        cur.executemany(
+            "INSERT INTO teams (team_name, wins, losses) VALUES (?, ?, ?)",
+            sample_teams
+        )
+        db.commit()
+
+        return "Standings cleared and reset to default successfully!", 200
     except Exception as e:
         app.logger.error(f"Error clearing standings: {e}")
         return "An error occurred while clearing standings.", 500
+
+
+@app.route('/update_points')
+def update_points():
+    try:
+        db = get_db()
+        cur = db.cursor()
+
+        # Define points per win and per game
+        points_per_win = 10
+        points_per_game = 1
+        points_per_loss = 0
+        total_points = (points_per_win + points_per_game + points_per_loss)  # 
+
+        # Update points for each team
+        cur.execute("SELECT team_name, wins, losses FROM teams")
+        teams = cur.fetchall()
+
+        for team in teams:
+            team_name, wins, losses = team
+            total_games = wins + losses
+            points = (wins * points_per_win) + (total_games * points_per_game)
+
+            cur.execute(
+                "UPDATE teams SET points = ? WHERE team_name = ?",
+                (points, team_name)
+            )
+
+        db.commit()
+        return "Points updated successfully!", 200
+    except Exception as e:
+        app.logger.error(f"Error updating points: {e}")
+        return "An error occurred while updating points.", 500
 
 
 if __name__ == '__main__':
