@@ -94,10 +94,18 @@ def upload_file():
             app.logger.error("Uploaded file is missing required columns.")
             return redirect("https://dashboard.bodegacatsgc.gg")
 
+        # Remove duplicate teams by keeping the first occurrence
+        data = data.drop_duplicates(subset=['team_name'], keep='first')
+
+        # Remove sample teams if real teams are present
+        sample_teams = ['Sample Team 1', 'Sample Team 2']
+        if not data[data['team_name'].isin(sample_teams)].empty:
+            data = data[~data['team_name'].isin(sample_teams)]
+
+        # Insert data into the database
         db = get_db()
         cur = db.cursor()
 
-        # Insert data into the database
         for _, row in data.iterrows():
             cur.execute(
                 "INSERT INTO teams (team_name, wins, losses) VALUES (?, ?, ?)",
