@@ -59,10 +59,12 @@ def leaderboard():
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
+        app.logger.error("No file part in the request.")
         return redirect("https://dashboard.bodegacatsgc.gg")
 
     file = request.files['file']
     if file.filename == '':
+        app.logger.error("No file selected for uploading.")
         return redirect("https://dashboard.bodegacatsgc.gg")
 
     # Validate file size (limit to 5MB)
@@ -70,6 +72,7 @@ def upload_file():
     file_size = file.tell()
     file.seek(0)
     if file_size > 5 * 1024 * 1024:
+        app.logger.error("File size exceeds the 5MB limit.")
         return redirect("https://dashboard.bodegacatsgc.gg")
 
     filename = secure_filename(file.filename)
@@ -82,11 +85,13 @@ def upload_file():
         elif filename.endswith('.xlsx'):
             data = pd.read_excel(file_path)
         else:
+            app.logger.error("Unsupported file format.")
             return redirect("https://dashboard.bodegacatsgc.gg")
 
         # Validate required columns
         required_columns = {'team_name', 'wins', 'losses'}
         if not required_columns.issubset(data.columns):
+            app.logger.error("Uploaded file is missing required columns.")
             return redirect("https://dashboard.bodegacatsgc.gg")
 
         db = get_db()
@@ -99,8 +104,10 @@ def upload_file():
                 (row['team_name'], int(row['wins']), int(row['losses']))
             )
         db.commit()
+        app.logger.info("Data successfully inserted into the database.")
 
     except Exception as e:
+        app.logger.error(f"Error processing the uploaded file: {e}")
         return redirect("https://dashboard.bodegacatsgc.gg")
 
     finally:
