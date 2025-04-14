@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies
-RUN pip install flask && \
+RUN pip install -r requirements.txt && \
     apt-get update && apt-get install -y sqlite3 && \
     sqlite3 leaderboard.db < schema.sql
 
