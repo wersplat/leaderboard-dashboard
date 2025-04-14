@@ -1,10 +1,11 @@
 import os
 import sys
-import sqlite3
+import pandas as pd
 from flask import Flask, g, render_template, request, redirect
 from werkzeug.utils import secure_filename
-import pandas as pd
 from dotenv import load_dotenv
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -13,26 +14,20 @@ load_dotenv()
 print(sys.executable)
 
 app = Flask(__name__)
-DATABASE = os.getenv("DATABASE", "/tmp/leaderboard.db")
+DATABASE_URL = os.getenv("DATABASE_URL", \
+    "postgresql://username:password@localhost:5432/leaderboard")
 
 
 def get_db():
     db = getattr(g, "_database", None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
+        db = g._database = psycopg2.connect(
+            DATABASE_URL, cursor_factory=RealDictCursor
+        )
         with app.app_context():
             with open("schema.sql", "r") as f:
-                db.cursor().executescript(f.read())
-            # Check if the teams table is empty
-            cur = db.cursor()
-            cur.execute("SELECT COUNT(*) FROM teams")
-            count = cur.fetchone()[0]
-            if count == 0:
-                # Insert sample data only if the table is empty
-                cur.execute("INSERT INTO teams (team_name, wins, losses, total_points) VALUES \
-                            ('Team A', 5, 2, 52),\
-                            ('Team B', 4, 3, 47),\
-                            ('Team C', 3, 4, 37)")
+                cur = db.cursor()
+                cur.execute(f.read())
                 db.commit()
     return db
 
@@ -247,6 +242,7 @@ def add_team():
     wins = request.form.get("wins", 0, type=int)
     losses = request.form.get("losses", 0, type=int)
     total_points = request.form.get("total_points", 0, type=int)
+    division = request.form.get("division", "Unknown")
 
     db = get_db()
     cur = db.cursor()
@@ -259,13 +255,17 @@ def add_team():
 
         # Insert the new team
         cur.execute(
-            "INSERT INTO teams (team_name, wins, losses, total_points) VALUES (?, ?, ?, ?)",
-            (team_name, wins, losses, total_points),
+            "INSERT INTO teams (team_name, wins, losses, total_points, division) VALUES (?, ?, ?, ?, ?)",
+            (team_name, wins, losses, total_points, division),
         )
         db.commit()
         return redirect("/")
-    except sqlite3.IntegrityError as e:
+    except psycopg2.IntegrityError as e:
+        app.logger.error(f"Integrity error while adding team: {e}")
         return f"An error occurred: {e}", 500
+    except Exception as e:
+        app.logger.error(f"Unexpected error while adding team: {e}")
+        return "An unexpected error occurred.", 500
     finally:
         cur.close()
 

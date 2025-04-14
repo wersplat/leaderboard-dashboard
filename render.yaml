@@ -1,17 +1,18 @@
 services:
   - type: web
     name: leaderboard-dashboard
-    env: python
+    runtime: python3
     buildCommand: |
-      if ! command -v sqlite3 &> /dev/null; then
-        echo "Error: sqlite3 is not installed. Please contact Render support."
+      if ! command -v psql &> /dev/null; then
+        echo "Error: psql is not installed. Please contact Render support."
         exit 1
       fi
-      touch /tmp/leaderboard.db
-      sqlite3 /tmp/leaderboard.db .read schema.sql
+      psql $DATABASE_URL -f schema.sql || echo "PostgreSQL initialization failed. Ensure schema.sql is valid."
     startCommand: "python app.py"
     envVars:
       - key: FLASK_ENV
         value: production
+      - key: DATABASE_URL
+        value: postgresql://username:password@localhost:5432/leaderboard
     plan: free
     autoDeploy: true

@@ -8,23 +8,11 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies
-RUN if ! python -c "import flask" &> /dev/null; then \
-        echo "Flask is not installed. Installing Flask..." && \
-        pip install Flask; \
-    else \
-        echo "Flask is already installed."; \
+RUN if [ -f requirements.txt ]; then \
+        pip install -r requirements.txt; \
     fi && \
-    if [ -f requirements.txt ]; then \
-        pip freeze > installed.txt && \
-        comm -23 <(sort requirements.txt) <(sort installed.txt) > to_install.txt && \
-        if [ -s to_install.txt ]; then \
-            pip install -r to_install.txt; \
-        else \
-            echo "All requirements are already installed."; \
-        fi; \
-    fi && \
-    apt-get update && apt-get install -y sqlite3 && \
-    sqlite3 leaderboard.db < schema.sql
+    # Install PostgreSQL client tools
+    apt-get update && apt-get install -y postgresql-client
 
 # Expose the port
 EXPOSE 5000

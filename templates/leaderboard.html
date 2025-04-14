@@ -12,14 +12,20 @@
                 <th>Team Name</th>
                 <th>Wins</th>
                 <th>Losses</th>
+                <th>Games Played</th>
+                <th>Win Rate</th>
+                <th>Division</th>
             </tr>
         </thead>
         <tbody>
-            {% for row in rows %}
+            {% for row in teams %}
             <tr>
                 <td>{{ row[0] }}</td>
                 <td>{{ row[1] }}</td>
                 <td>{{ row[2] }}</td>
+                <td>{{ row[3] }}</td>
+                <td>{{ row[4] }}</td>
+                <td>{{ row[5] }}</td>
             </tr>
             {% endfor %}
         </tbody>
