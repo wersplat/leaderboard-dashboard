@@ -29,15 +29,7 @@ def get_db():
             count = cur.fetchone()[0]
             if count == 0:
                 # Insert sample data only if the table is empty
-                cur.execute(
-                    "INSERT INTO teams (team_name, wins, losses) VALUES "
-                    "('Team A', 10, 5)"
-                )
-                cur.execute(
-                    "INSERT INTO teams (team_name, wins, losses) VALUES "
-                    "('Team B', 7, 8)"
-                )
-                db.commit()
+                cur.execute("DELETE FROM teams")
     return db
 
 
@@ -127,8 +119,8 @@ def upload_file():
 @app.route('/download_standings')
 def download_standings():
     try:
-        conn = get_db_connection()
-        cur = conn.cursor()
+        db = get_db()
+        cur = db.cursor()
         cur.execute("SELECT * FROM teams")
         rows = cur.fetchall()
 
@@ -155,10 +147,10 @@ def download_standings():
 @app.route('/clear_standings')
 def clear_standings():
     try:
-        conn = get_db_connection()
-        cur = conn.cursor()
+        db = get_db()
+        cur = db.cursor()
         cur.execute("DELETE FROM teams")
-        conn.commit()
+        db.commit()
         return "Standings cleared successfully!", 200
     except Exception as e:
         app.logger.error(f"Error clearing standings: {e}")
