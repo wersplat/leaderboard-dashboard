@@ -1,4 +1,4 @@
-python==3.11.4
+
 aiohttp==3.11.16
 attrs==25.3.0
 beautifulsoup4==4.13.3
