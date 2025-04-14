@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from ..database.models import LeaderboardEntry
+from ...database.models import LeaderboardEntry
 
 class LeaderboardCommands(commands.Cog):
     def __init__(self, bot):

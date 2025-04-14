@@ -1,0 +1,1 @@
+# Moved to tests/ocr/test_ocr_engine.py in the new structure.

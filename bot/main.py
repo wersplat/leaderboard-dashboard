@@ -1,46 +1,19 @@
-import discord
-from discord.ext import commands
-import logging
 import os
-from config.config import BOT_PREFIX
+import asyncio
+from bot import LeaderboardBot
+from database.models import Base, engine
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("discord")
+async def main():
+    print("Initializing database...")
+    Base.metadata.create_all(bind=engine)
+    print("Database initialized successfully.")
 
-# Get bot token from environment variable
-TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+    bot = LeaderboardBot()
 
-# Replace hardcoded command prefix with centralized configuration
-COMMAND_PREFIX = BOT_PREFIX
+    await bot.load_extension('cogs.leaderboard_commands')
 
-# Intents
-intents = discord.Intents.default()
-intents.messages = True
-intents.message_content = True  # Required to read image attachments
+    async with bot:
+        await bot.start(os.getenv('DISCORD_TOKEN'))
 
-# Initialize bot
-bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=intents)
-
-# On ready
-@bot.event
-async def on_ready():
-    logger.info(f"Bot connected as {bot.user}")
-
-# Load command modules
-initial_extensions = [
-    "bot.commands",
-    "bot.slash"  # New slash command cog
-]
-for extension in initial_extensions:
-    try:
-        bot.load_extension(extension)
-        logger.info(f"Loaded extension: {extension}")
-    except Exception as e:
-        logger.error(f"Failed to load extension {extension}: {e}")
-
-# Run bot
-if TOKEN:
-    bot.run(TOKEN)
-else:
-    logger.error("DISCORD_BOT_TOKEN not set in environment variables.")
+if __name__ == "__main__":
+    asyncio.run(main())

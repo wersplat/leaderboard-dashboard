@@ -1,2 +1,1 @@
-# Placeholder for bot tests
-...existing code...
+# Moved to tests/bot/test_commands.py in the new structure.

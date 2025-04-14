@@ -1,8 +1,6 @@
-import requests
-import logging
-import os
+from utils.logging import setup_logging
 
-logger = logging.getLogger("discord")
+logger = setup_logging()
 
 # Use environment variable for OCR API URL
 OCR_API_URL = os.getenv("OCR_API_URL", "http://localhost:8000/ocr")

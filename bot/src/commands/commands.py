@@ -1,18 +1,13 @@
 from discord.ext import commands
 import discord
-import logging
 from src.bot.image_handler import send_image_to_api
 from datetime import datetime
 from sheets.sheets_api import append_stats_to_sheet, get_game_data_by_id  # Assuming these functions exist
 from sheets.leaderboard import get_leaderboard
 from bot.cooldowns import is_on_cooldown, update_cooldown
+from utils.logging import setup_logging
 
-# Configure logging with timestamps
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
-)
-logger = logging.getLogger("discord")
+logger = setup_logging()
 
 class ParseCommands(commands.Cog):
     def __init__(self, bot):

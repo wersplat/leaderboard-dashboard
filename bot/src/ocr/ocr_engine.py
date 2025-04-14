@@ -1,4 +1,3 @@
-import os
 from tesseract import TesseractOCR
 
 def run_ocr(image):

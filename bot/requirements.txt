@@ -1,5 +1,0 @@
-fastapi
-discord.py
-gspread
-oauth2client
-uvicorn
