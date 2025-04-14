@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord import Option
 from sheets.leaderboard import get_leaderboard, get_mvp_totals, get_all_players  # Fetch player names dynamically
 from sheets.sheets_api import append_stats_to_sheet, get_game_summary, get_all_game_ids  # Fetch game IDs dynamically
-from bot.image_handler import send_image_to_api  # Assuming this function sends image to OCR API
+from src.bot.image_handler import send_image_to_api  # Assuming this function sends image to OCR API
 from datetime import datetime
 from bot.cooldowns import is_on_cooldown, update_cooldown
 import logging
