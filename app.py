@@ -19,7 +19,8 @@ def get_db():
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
         with app.app_context():
-            with open('schema.sql', 'r') as f:
+            schema_path = os.path.join(os.path.dirname(__file__), 'dashboard', 'schema.sql')
+            with open(schema_path, 'r') as f:
                 db.cursor().executescript(f.read())
             # Check if the teams table is empty
             cur = db.cursor()
