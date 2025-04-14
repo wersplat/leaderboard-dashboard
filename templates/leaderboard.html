@@ -74,51 +74,13 @@
             }
         }
     </style>
-    <script>
-        // Show loading spinner during file upload
-        document.querySelector('form').addEventListener('submit', function() {
-            const button = document.querySelector('button');
-            button.disabled = true;
-            button.innerHTML = 'Uploading...';
-        });
-
-        // Search functionality for the leaderboard table
-        function searchTable() {
-            const input = document.getElementById('searchInput');
-            const filter = input.value.toLowerCase();
-            const rows = document.querySelectorAll('tbody tr');
-
-            rows.forEach(row => {
-                const cells = row.getElementsByTagName('td');
-                const match = Array.from(cells).some(cell => cell.textContent.toLowerCase().includes(filter));
-                row.style.display = match ? '' : 'none';
-            });
-        }
-    </script>
 </head>
 <body>
-    <h1>Team Leaderboard</h1>
-
-    <!-- Add search bar above the table -->
-    <div style="margin-bottom: 20px; text-align: center;">
-        <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search teams..." style="padding: 10px; width: 80%; border: 1px solid #ccc; border-radius: 4px;">
-    </div>
-
-    <table>
-        <thead>
-            <tr><th>Team</th><th>Wins</th><th>Losses</th></tr>
-        </thead>
-        <tbody>
-            {% for row in rows %}
-            <tr><td>{{ row[0] }}</td><td>{{ row[1] }}</td><td>{{ row[2] }}</td></tr>
-            {% endfor %}
-        </tbody>
+    <h1>Leaderboard</h1>
+    <table id="standings">
+        <!-- Table content here -->
     </table>
-
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <label for="file">Upload CSV/Excel:</label>
-        <input type="file" name="file" id="file" accept=".csv, .xlsx">
-        <button type="submit">Upload</button>
-    </form>
+    <button onclick="window.location.href='/download_standings'">Download Standings</button>
+    <button onclick="if(confirm('Are you sure you want to clear the standings?')) window.location.href='/clear_standings'">Clear Standings</button>
 </body>
 </html>

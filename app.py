@@ -120,5 +120,38 @@ def upload_file():
     return "File uploaded and processed successfully", 200
 
 
+@app.route('/download_standings')
+def download_standings():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM teams")
+    rows = cur.fetchall()
+
+    # Create a CSV file in memory
+    import csv
+    from io import StringIO
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Team Name', 'Wins', 'Losses'])  # Header row
+    writer.writerows(rows)
+    output.seek(0)
+
+    # Send the CSV file as a response
+    return app.response_class(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={"Content-Disposition": "attachment;filename=standings.csv"}
+    )
+
+
+@app.route('/clear_standings')
+def clear_standings():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM teams")
+    conn.commit()
+    return "Standings cleared successfully!", 200
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
