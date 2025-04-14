@@ -15,7 +15,7 @@ print(sys.executable)
 
 app = Flask(__name__)
 DATABASE_URL = os.getenv("DATABASE_URL", \
-    "postgresql://username:password@localhost:5000/leaderboard")
+    "postgresql://username:password@localhost:5432/leaderboard")
 
 
 def get_db():
@@ -270,5 +270,8 @@ def add_team():
         cur.close()
 
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0:5000", debug=True)
+def new_func(__name__, app):
+    if __name__ == "__main__":
+        app.run(host="0.0.0.0:", debug=True)
+
+new_func(__name__, app)
