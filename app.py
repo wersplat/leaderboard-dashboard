@@ -39,15 +39,10 @@ def get_db():
                     "INSERT INTO teams (team_name, wins, losses) VALUES "
                     "('Team B', 7, 8)"
                 )
-                cur.execute(
-                    "INSERT INTO teams (team_name, wins, losses) VALUES "
-                    "('Team C', 12, 3)"
-                )
-                cur.execute(
-                    "INSERT INTO teams (team_name, wins, losses) VALUES "
-                    "('Team D', 5, 10)"
-                )
-                db.commit()
+            else:
+                # Remove sample data if real data exists
+                cur.execute("DELETE FROM teams WHERE team_name IN ('Team A', 'Team B')")
+            db.commit()
     return db
 
 
