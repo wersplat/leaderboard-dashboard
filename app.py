@@ -15,7 +15,7 @@ print(sys.executable)
 
 app = Flask(__name__)
 DATABASE_URL = os.getenv("DATABASE_URL", \
-    "postgresql://username:password@localhost:5432/leaderboard")
+    "postgresql://username:password@localhost:5000/leaderboard")
 
 
 def get_db():
