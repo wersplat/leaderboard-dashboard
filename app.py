@@ -40,10 +40,11 @@ def close_connection(exception):
         db.close()
 
 
+# Update the leaderboard route to include new columns
 @app.route('/')
 def leaderboard():
     cur = get_db().cursor()
-    cur.execute("SELECT team_name, wins, losses FROM teams ORDER BY wins DESC")
+    cur.execute("SELECT team_name, wins, losses, games_played, win_rate, division, last_updated FROM teams ORDER BY wins DESC")
     rows = cur.fetchall()
     return render_template('leaderboard.html', rows=rows)
 
@@ -81,18 +82,10 @@ def upload_file():
             return redirect("https://dashboard.bodegacatsgc.gg")
 
         # Validate required columns
-        required_columns = {'team_name', 'wins', 'losses'}
+        required_columns = {'team_name', 'wins', 'losses', 'division'}
         if not required_columns.issubset(data.columns):
             app.logger.error("Uploaded file is missing required columns.")
             return redirect("https://dashboard.bodegacatsgc.gg")
-
-        # Remove duplicate teams by keeping the first occurrence
-        data = data.drop_duplicates(subset=['team_name'], keep='first')
-
-        # Remove sample teams if real teams are present
-        sample_teams = ['Sample Team 1', 'Sample Team 2']
-        if not data[data['team_name'].isin(sample_teams)].empty:
-            data = data[~data['team_name'].isin(sample_teams)]
 
         # Insert data into the database
         db = get_db()
@@ -100,8 +93,8 @@ def upload_file():
 
         for _, row in data.iterrows():
             cur.execute(
-                "INSERT INTO teams (team_name, wins, losses) VALUES (?, ?, ?)",
-                (row['team_name'], int(row['wins']), int(row['losses']))
+                "INSERT INTO teams (team_name, wins, losses, division) VALUES (?, ?, ?, ?)",
+                (row['team_name'], int(row['wins']), int(row['losses']), row.get('division', 'Unknown'))
             )
         db.commit()
         app.logger.info("Data successfully inserted into the database.")
@@ -116,12 +109,13 @@ def upload_file():
     return redirect("https://dashboard.bodegacatsgc.gg")
 
 
+# Update the download_standings route to include new columns
 @app.route('/download_standings')
 def download_standings():
     try:
         db = get_db()
         cur = db.cursor()
-        cur.execute("SELECT * FROM teams")
+        cur.execute("SELECT team_name, wins, losses, games_played, win_rate, division, last_updated FROM teams")
         rows = cur.fetchall()
 
         # Create a CSV file in memory
@@ -129,7 +123,7 @@ def download_standings():
         from io import StringIO
         output = StringIO()
         writer = csv.writer(output)
-        writer.writerow(['Team Name', 'Wins', 'Losses'])  # Header row
+        writer.writerow(['Team Name', 'Wins', 'Losses', 'Games Played', 'Win Rate', 'Division', 'Last Updated'])  # Header row
         writer.writerows(rows)
         output.seek(0)
 
