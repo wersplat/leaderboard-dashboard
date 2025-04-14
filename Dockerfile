@@ -15,7 +15,7 @@ RUN if [ -f requirements.txt ]; then \
     apt-get update && apt-get install -y postgresql-client
 
 # Expose the port
-EXPOSE 5000
+EXPOSE 5432
 
 # Run the app
 CMD ["python", "app.py"]
