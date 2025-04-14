@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import sqlite3
-from flask import Flask, render_template, g
+from flask import Flask, render_template, g, request
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -59,6 +59,15 @@ def leaderboard():
     cur.execute("SELECT team_name, wins, losses FROM teams ORDER BY wins DESC")
     rows = cur.fetchall()
     return render_template('leaderboard.html', rows=rows)
+
+
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+    return 'Server shutting down...'
 
 
 if __name__ == '__main__':
