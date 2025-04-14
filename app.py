@@ -44,7 +44,7 @@ def close_connection(exception):
 @app.route('/')
 def leaderboard():
     cur = get_db().cursor()
-    cur.execute("SELECT team_name, wins, losses, games_played, win_rate, division, last_updated FROM teams ORDER BY wins DESC")
+    cur.execute("SELECT team_name, wins, losses, games_played, win_rate, division FROM teams ORDER BY wins DESC")
     rows = cur.fetchall()
     return render_template('leaderboard.html', rows=rows)
 
@@ -115,7 +115,7 @@ def download_standings():
     try:
         db = get_db()
         cur = db.cursor()
-        cur.execute("SELECT team_name, wins, losses, games_played, win_rate, division, last_updated FROM teams")
+        cur.execute("SELECT team_name, wins, losses, games_played, win_rate, division FROM teams")
         rows = cur.fetchall()
 
         # Create a CSV file in memory
@@ -123,7 +123,7 @@ def download_standings():
         from io import StringIO
         output = StringIO()
         writer = csv.writer(output)
-        writer.writerow(['Team Name', 'Wins', 'Losses', 'Games Played', 'Win Rate', 'Division', 'Last Updated'])  # Header row
+        writer.writerow(['Team Name', 'Wins', 'Losses', 'Games Played', 'Win Rate', 'Division'])  # Header row
         writer.writerows(rows)
         output.seek(0)
 
@@ -172,10 +172,8 @@ def update_points():
         # Define points per win and per game
         points_per_win = 10
         points_per_game = 1
-        points_per_loss = 0
-        total_points = (points_per_win + points_per_game + points_per_loss)  # 
 
-        # Update points for each team
+        # Update points and total_points for each team
         cur.execute("SELECT team_name, wins, losses FROM teams")
         teams = cur.fetchall()
 
@@ -185,8 +183,8 @@ def update_points():
             points = (wins * points_per_win) + (total_games * points_per_game)
 
             cur.execute(
-                "UPDATE teams SET points = ? WHERE team_name = ?",
-                (points, team_name)
+                "UPDATE teams SET points = ?, total_points = ? WHERE team_name = ?",
+                (points, points, team_name)
             )
 
         db.commit()
@@ -205,7 +203,7 @@ def add_column():
         # Step 1: Add the column without a default value
         cur.execute("ALTER TABLE teams ADD COLUMN new_column TEXT")
 
-        # Step 2: Update the column without a timestamp
+        # Step 2: Update the column with a default value
         cur.execute("UPDATE teams SET new_column = 'Default Value'")
 
         db.commit()
